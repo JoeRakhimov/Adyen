@@ -1,7 +1,6 @@
 package com.adyen.android.assignment.money
 
-enum class Coin(override val minorValue: Int) :
-    MonetaryElement {
+enum class Coin(override val minorValue: Int) : MonetaryElement {
     TWO_EURO(2_00),
     ONE_EURO(1_00),
     FIFTY_CENT(50),
