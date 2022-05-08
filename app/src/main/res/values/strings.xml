@@ -2,8 +2,7 @@
     <string name="app_name">Android Assignment</string>
     <string name="location_permission_is_not_granted">Location permission is not granted</string>
     <string name="location_permission">Allow access</string>
-    <string name="retrieving_location">Retrieving location</string>
-    <string name="loading_data">Loading data</string>
     <string name="something_went_wrong">Something went wrong</string>
     <string name="try_again">Try again</string>
+    <string name="loading">Loading…</string>
 </resources>

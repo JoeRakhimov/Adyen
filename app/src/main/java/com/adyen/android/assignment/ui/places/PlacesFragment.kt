@@ -1,11 +1,9 @@
 package com.adyen.android.assignment.ui.places
 
 import android.Manifest
-import android.annotation.SuppressLint
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -19,12 +17,12 @@ import com.adyen.android.assignment.api.model.Place
 import com.adyen.android.assignment.ui.base.RecyclerClickListener
 import com.adyen.android.assignment.extensions.hide
 import com.adyen.android.assignment.extensions.show
-import com.google.android.gms.location.*
-import com.google.android.gms.tasks.CancellationTokenSource
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.places_fragment.*
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 
 @AndroidEntryPoint
+@ExperimentalCoroutinesApi
 class PlacesFragment : Fragment() {
 
     companion object {
@@ -35,8 +33,8 @@ class PlacesFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        init()
-        if(savedInstanceState==null) checkLocationPermission()
+        if (savedInstanceState == null) checkLocationPermission()
+        observeData()
     }
 
     override fun onCreateView(
@@ -46,16 +44,17 @@ class PlacesFragment : Fragment() {
         return inflater.inflate(R.layout.places_fragment, container, false)
     }
 
-    private fun init() {
+    private fun observeData() {
         lifecycleScope.launchWhenStarted {
             viewModel.loading.collect { loading ->
                 if (loading) {
                     progress_loading.show()
-                    text_message.show()
-                    text_message.text = getString(R.string.loading_data)
+                    text_loading.show()
+                    text_loading.text = getString(R.string.loading)
+                    button_try_again.hide()
                 } else {
                     progress_loading.hide()
-                    text_message.hide()
+                    text_loading.hide()
                 }
             }
         }
@@ -76,71 +75,47 @@ class PlacesFragment : Fragment() {
             viewModel.error.collect { error ->
                 if (error) {
                     progress_loading.hide()
-                    text_message.show()
-                    text_message.text = getString(R.string.something_went_wrong)
+                    text_loading.show()
+                    text_loading.text = getString(R.string.something_went_wrong)
                     button_try_again.show()
                     button_try_again.setOnClickListener {
-                        text_message.hide()
+                        text_loading.hide()
                         button_try_again.hide()
-                        getLocation()
+                        checkLocationPermission()
+                    }
+                }
+            }
+        }
+        lifecycleScope.launchWhenStarted {
+            viewModel.locationPermissionGranted.collect { isGranted ->
+                if (!isGranted) {
+                    recycler_places.hide()
+                    progress_loading.hide()
+                    text_loading.show()
+                    text_loading.text = getString(R.string.location_permission_is_not_granted)
+                    button_try_again.show()
+                    button_try_again.setOnClickListener {
+                        checkLocationPermission()
                     }
                 }
             }
         }
     }
 
-
     private val requestPermissionLauncher =
         registerForActivityResult(
             ActivityResultContracts.RequestPermission()
         ) { isGranted: Boolean ->
             if (isGranted) {
-                progress_loading.hide()
-                text_message.hide()
-                button_location_permission.hide()
-                getLocation()
+                viewModel.onLocationPermissionChange(true)
+                viewModel.getLocation()
             } else {
-                recycler_places.hide()
-                progress_loading.hide()
-                text_message.show()
-                text_message.text = getString(R.string.location_permission_is_not_granted)
-                button_location_permission.show()
-                button_location_permission.setOnClickListener {
-                    checkLocationPermission()
-                }
+                viewModel.onLocationPermissionChange(false)
             }
         }
 
     private fun checkLocationPermission() {
         requestPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
-    }
-
-    @SuppressLint("MissingPermission")
-    private fun getLocation() {
-        lifecycleScope.launchWhenStarted {
-            progress_loading.show()
-            text_message.show()
-            text_message.text = getString(R.string.retrieving_location)
-            button_location_permission.hide()
-            val fusedLocationProviderClient = activity?.let {
-                LocationServices.getFusedLocationProviderClient(it)
-            }
-            val cts = CancellationTokenSource()
-            fusedLocationProviderClient?.getCurrentLocation(
-                LocationRequest.PRIORITY_HIGH_ACCURACY,
-                cts.token
-            )?.addOnSuccessListener {
-                progress_loading.hide()
-                text_message.hide()
-                val latitude = it.latitude
-                val longitude = it.longitude
-                getPlaces(latitude, longitude)
-            }
-        }
-    }
-
-    private fun getPlaces(latitude: Double, longitude: Double) {
-        viewModel.getPlaces(latitude, longitude)
     }
 
     private fun openMaps(place: Place) {
