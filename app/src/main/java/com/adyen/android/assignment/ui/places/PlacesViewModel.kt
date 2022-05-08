@@ -27,6 +27,10 @@ import kotlinx.coroutines.launch
 import java.lang.Exception
 import javax.inject.Inject
 
+const val PERMISSION_TYPE_GRANTED = 1
+const val PERMISSION_TYPE_DENIED = 0
+const val PERMISSION_TYPE_DENIED_NEVER_ASK_AGAIN = -1
+
 @HiltViewModel
 @ExperimentalCoroutinesApi
 class PlacesViewModel @Inject constructor(
@@ -43,11 +47,12 @@ class PlacesViewModel @Inject constructor(
     private val _error = MutableStateFlow(false)
     val error: StateFlow<Boolean> = _error
 
-    private val _locationPermissionGranted = MutableStateFlow(true)
-    val locationPermissionGranted: StateFlow<Boolean> = _locationPermissionGranted
+    private val _locationPermissionState = MutableStateFlow(PERMISSION_TYPE_GRANTED)
+    val locationPermissionState: StateFlow<Int> = _locationPermissionState
 
     private val locationRequest =
         LocationRequest.create()
+            .setNumUpdates(1)
             .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
 
     private val locationFlow = LocationFlow(application, locationRequest)
@@ -91,8 +96,16 @@ class PlacesViewModel @Inject constructor(
         }
     }
 
-    fun onLocationPermissionChange(isGranted: Boolean) {
-        _locationPermissionGranted.value = isGranted
+    fun onLocationPermissionChange(type: Int) {
+        _locationPermissionState.value = type
+    }
+
+    fun sortPlacesByDistance() {
+        _placesList.value = placesList.value.sortedBy { it.distance }
+    }
+
+    fun sortPlacesByName() {
+        _placesList.value = placesList.value.sortedBy { it.name }
     }
 
 }

@@ -5,4 +5,7 @@
     <string name="something_went_wrong">Something went wrong</string>
     <string name="try_again">Try again</string>
     <string name="loading">Loading…</string>
+    <string name="sort_by_distance">Sort by distance</string>
+    <string name="sort_by_name">Sort by name</string>
+    <string name="open_settings">Open settings</string>
 </resources>

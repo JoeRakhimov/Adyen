@@ -4,7 +4,6 @@ buildscript {
     ext.gradle_build_version = "7.0.4"
     ext.kotlin_version = "1.6.20"
     ext.hilt_version = "2.41"
-    ext.compose_version = "2.5.0-beta01"
     repositories {
         google()
         mavenCentral()
