@@ -1,7 +1,23 @@
 package com.adyen.android.assignment.ui
 
-import androidx.appcompat.app.AppCompatActivity
+import android.os.Bundle
+import androidx.fragment.app.FragmentActivity
+import com.adyen.android.assignment.R
+import com.adyen.android.assignment.ui.places.PlacesFragment
+import dagger.hilt.android.AndroidEntryPoint
 
-class MainActivity : AppCompatActivity() {
-    // TODO: Placeholder activity that may be used
+@AndroidEntryPoint
+class MainActivity : FragmentActivity() {
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.main_activity)
+        if (savedInstanceState == null) {
+            supportFragmentManager.beginTransaction()
+                .replace(R.id.container, PlacesFragment.newInstance())
+                .commitNow()
+        }
+    }
+
 }
+

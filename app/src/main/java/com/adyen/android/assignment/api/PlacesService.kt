@@ -11,6 +11,7 @@ import retrofit2.http.QueryMap
 
 
 interface PlacesService {
+
     /**
      * Get venue recommendations.
      *
@@ -18,16 +19,6 @@ interface PlacesService {
      */
     @Headers("Authorization: ${BuildConfig.API_KEY}")
     @GET("places/nearby")
-    fun getVenueRecommendations(@QueryMap query: Map<String, String>): Call<ResponseWrapper>
+    suspend fun getVenueRecommendations(@QueryMap query: Map<String, String>): ResponseWrapper
 
-    companion object  {
-        private val retrofit by lazy {
-            Retrofit.Builder()
-                .baseUrl(BuildConfig.FOURSQUARE_BASE_URL)
-                .addConverterFactory(MoshiConverterFactory.create())
-                .build()
-        }
-
-        val instance: PlacesService by lazy { retrofit.create(PlacesService::class.java) }
-    }
 }

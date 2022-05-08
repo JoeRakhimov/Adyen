@@ -1,6 +1,7 @@
 package com.adyen.android.assignment.api
 
 class VenueRecommendationsQueryBuilder : PlacesQueryBuilder() {
+
     private var latitudeLongitude: String? = null
 
     fun setLatitudeLongitude(latitude: Double, longitude: Double): VenueRecommendationsQueryBuilder {
@@ -11,4 +12,5 @@ class VenueRecommendationsQueryBuilder : PlacesQueryBuilder() {
     override fun putQueryParams(queryParams: MutableMap<String, String>) {
         latitudeLongitude?.apply { queryParams["ll"] = this }
     }
+
 }

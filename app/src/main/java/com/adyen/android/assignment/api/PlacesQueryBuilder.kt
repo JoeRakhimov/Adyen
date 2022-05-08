@@ -17,4 +17,5 @@ abstract class PlacesQueryBuilder {
     companion object {
         private val dateFormat = SimpleDateFormat("yyyyMMdd", Locale.ROOT)
     }
+
 }
