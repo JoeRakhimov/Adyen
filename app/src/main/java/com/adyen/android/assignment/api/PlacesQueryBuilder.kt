@@ -4,10 +4,15 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
+const val PLACES_LIMIT_PER_REQUEST = "50"
+
 abstract class PlacesQueryBuilder {
 
     fun build(): Map<String, String> {
-        val queryParams = hashMapOf("v" to dateFormat.format(Date()))
+        val queryParams = hashMapOf(
+            "v" to dateFormat.format(Date()),
+            "limit" to PLACES_LIMIT_PER_REQUEST
+        )
         putQueryParams(queryParams)
         return queryParams
     }
