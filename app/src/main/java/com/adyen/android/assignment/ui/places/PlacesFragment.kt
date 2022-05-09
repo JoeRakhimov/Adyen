@@ -17,6 +17,7 @@ import com.adyen.android.assignment.api.model.Place
 import com.adyen.android.assignment.extensions.hide
 import com.adyen.android.assignment.extensions.isAirplaneModeOn
 import com.adyen.android.assignment.extensions.show
+import com.adyen.android.assignment.extensions.showToast
 import com.adyen.android.assignment.ui.base.RecyclerClickListener
 import com.google.android.gms.location.LocationServices
 import dagger.hilt.android.AndroidEntryPoint
@@ -172,7 +173,7 @@ class PlacesFragment : Fragment() {
         if (mapIntent.resolveActivity(requireContext().packageManager) != null) {
             startActivity(mapIntent)
         } else {
-            Toast.makeText(requireContext(), getString(R.string.google_maps_not_installed), Toast.LENGTH_LONG).show()
+            requireContext().showToast(getString(R.string.google_maps_not_installed))
         }
     }
 
