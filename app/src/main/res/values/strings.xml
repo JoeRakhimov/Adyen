@@ -8,4 +8,10 @@
     <string name="sort_by_distance">Sort by distance</string>
     <string name="sort_by_name">Sort by name</string>
     <string name="open_settings">Open settings</string>
+    <string name="loading_data">Loading data…</string>
+    <string name="retrieving_location">Retrieving location information…</string>
+    <string name="error_on_retrieving_location">Error on retrieving location information</string>
+    <string name="error_on_loading_data">Error on loading data</string>
+    <string name="device_in_airplane_mode">Device in airplane mode</string>
+    <string name="google_maps_not_installed">Google Maps is not installed</string>
 </resources>

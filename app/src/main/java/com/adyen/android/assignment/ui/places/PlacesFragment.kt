@@ -6,6 +6,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
 import android.view.*
+import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -14,15 +15,14 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.adyen.android.assignment.R
 import com.adyen.android.assignment.api.model.Place
 import com.adyen.android.assignment.extensions.hide
+import com.adyen.android.assignment.extensions.isAirplaneModeOn
 import com.adyen.android.assignment.extensions.show
 import com.adyen.android.assignment.ui.base.RecyclerClickListener
+import com.google.android.gms.location.LocationServices
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.places_fragment.*
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-
 
 @AndroidEntryPoint
-@ExperimentalCoroutinesApi
 class PlacesFragment : Fragment() {
 
     companion object {
@@ -42,12 +42,18 @@ class PlacesFragment : Fragment() {
     }
 
     private fun observeData() {
+
         lifecycleScope.launchWhenStarted {
             viewModel.loading.collect { loading ->
-                if (loading) {
+                if (loading.loading) {
                     progress_loading.show()
                     text_loading.show()
-                    text_loading.text = getString(R.string.loading)
+                    when (loading.type) {
+                        LOADING_TYPE_LOCATION -> text_loading.text =
+                            getString(R.string.retrieving_location)
+                        LOADING_TYPE_PLACES -> text_loading.text = getString(R.string.loading_data)
+                    }
+
                     button_try_again.hide()
                 } else {
                     progress_loading.hide()
@@ -55,6 +61,7 @@ class PlacesFragment : Fragment() {
                 }
             }
         }
+
         lifecycleScope.launchWhenStarted {
             viewModel.placesList.collect {
                 recycler_places.show()
@@ -69,13 +76,19 @@ class PlacesFragment : Fragment() {
                 })
             }
         }
+
         lifecycleScope.launchWhenStarted {
             viewModel.error.collect { error ->
-                if (error) {
+                if (error.error) {
                     recycler_places.hide()
                     progress_loading.hide()
                     text_loading.show()
-                    text_loading.text = getString(R.string.something_went_wrong)
+                    text_loading.text = when(error.type){
+                        ERROR_TYPE_LOCATION -> getString(R.string.error_on_retrieving_location)
+                        ERROR_TYPE_PLACES -> getString(R.string.error_on_loading_data)
+                        ERROR_TYPE_AIRPLANE_MODE_ON -> getString(R.string.device_in_airplane_mode)
+                        else -> getString(R.string.something_went_wrong)
+                    }
                     button_try_again.show()
                     button_try_again.setOnClickListener {
                         text_loading.hide()
@@ -85,6 +98,7 @@ class PlacesFragment : Fragment() {
                 }
             }
         }
+
         lifecycleScope.launchWhenStarted {
             viewModel.locationPermissionState.collect { state ->
                 when (state) {
@@ -123,7 +137,7 @@ class PlacesFragment : Fragment() {
             if (isGranted) {
                 button_open_settings.hide()
                 viewModel.onLocationPermissionChange(PERMISSION_TYPE_GRANTED)
-                viewModel.getLocation()
+                getLocation()
             } else {
                 if (shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_FINE_LOCATION)) {
                     viewModel.onLocationPermissionChange(PERMISSION_TYPE_DENIED)
@@ -132,6 +146,17 @@ class PlacesFragment : Fragment() {
                 }
             }
         }
+
+    private fun getLocation() {
+        if(requireContext().isAirplaneModeOn()){
+            viewModel.onAirplaneMode()
+        } else {
+            val fusedLocationProviderClient = activity?.let {
+                LocationServices.getFusedLocationProviderClient(it)
+            }
+            viewModel.getLocation(fusedLocationProviderClient)
+        }
+    }
 
     private fun checkLocationPermission() {
         requestPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
@@ -144,7 +169,11 @@ class PlacesFragment : Fragment() {
         val gmmIntentUri = Uri.parse("geo:0,0?q=$latitude,$longitude($label)")
         val mapIntent = Intent(Intent.ACTION_VIEW, gmmIntentUri)
         mapIntent.setPackage("com.google.android.apps.maps")
-        startActivity(mapIntent)
+        if (mapIntent.resolveActivity(requireContext().packageManager) != null) {
+            startActivity(mapIntent)
+        } else {
+            Toast.makeText(requireContext(), getString(R.string.google_maps_not_installed), Toast.LENGTH_LONG).show()
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {

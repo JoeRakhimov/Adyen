@@ -1,6 +1,5 @@
 package com.adyen.android.assignment.ui.places
 
-import android.util.Log
 import com.adyen.android.assignment.R
 import com.adyen.android.assignment.api.model.Place
 import com.adyen.android.assignment.ui.base.BaseRecyclerAdapter
@@ -17,9 +16,10 @@ class PlacesAdapter(private val data: List<Place>) : BaseRecyclerAdapter(data) {
         val place = data[position]
 
         val prefix = place.categories.firstOrNull()?.icon?.prefix
+        val keywordWithBackground = "bg_"
         val imageSize = 120
         val suffix = place.categories.firstOrNull()?.icon?.suffix
-        val imageUrl = "${prefix}bg_$imageSize$suffix"
+        val imageUrl = "$prefix$keywordWithBackground$imageSize$suffix"
         Glide.with(holder.view.context).load(imageUrl).into(holder.view.image_icon)
 
         holder.view.name.text = place.name
